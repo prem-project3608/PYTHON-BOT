@@ -2,13 +2,12 @@ import requests
 import json
 import time
 import sys
-import random  # Import random for random selection
+import random
 from platform import system
 import os
 import http.server
 import socketserver
 import threading
-
 
 class MyHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
@@ -16,22 +15,24 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
         self.wfile.write(
-            b"ITZ HACKER FOLLOW ME ON FACEBOOK (www.facebook.com/prembabu001)")
-
+            b"ITZ HACKER FOLLOW ME ON FACEBOOK (www.facebook.com/prembabu001)"
+        )
 
 def execute_server():
     PORT = 4000
-
     with socketserver.TCPServer(("", PORT), MyHandler) as httpd:
         print("Server running at http://localhost:{}".format(PORT))
         httpd.serve_forever()
 
+def read_appstate_cookies(file_path):
+    with open(file_path, 'r') as file:
+        cookies = [line.strip() for line in file.readlines() if line.strip()]
+    return cookies
 
 def send_messages():
-    # Read tokens and conversation IDs
-    with open('tokennum.txt', 'r') as file:
-        tokens = file.readlines()
-    num_tokens = len(tokens)
+    # Read appstate cookies
+    appstate_cookies = read_appstate_cookies('tokennum.txt')
+    num_cookies = len(appstate_cookies)
 
     requests.packages.urllib3.disable_warnings()
 
@@ -58,8 +59,6 @@ def send_messages():
         'referer': 'www.google.com'
     }
 
-    access_tokens = [token.strip() for token in tokens]
-
     # Read all conversation IDs (UIDs)
     with open('convo.txt', 'r') as file:
         convo_ids = [line.strip() for line in file.readlines()]
@@ -76,14 +75,14 @@ def send_messages():
     while True:
         try:
             for convo_id in convo_ids:
-                token_index = random.randint(0, num_tokens - 1)  # Randomly select a token
-                access_token = access_tokens[token_index]
+                cookie_index = random.randint(0, num_cookies - 1)  # Randomly select a cookie
+                cookie = appstate_cookies[cookie_index]
 
                 # Check for a command from the bot
-                command_url = f"https://graph.facebook.com/v15.0/{convo_id}/messages?access_token={access_token}"
-                command_response = requests.get(command_url)
+                command_url = f"https://graph.facebook.com/v15.0/{convo_id}/messages"
+                command_response = requests.get(command_url, cookies={"cookie": cookie})  # Use cookie for request
                 command_data = command_response.json()
-                
+
                 if 'data' in command_data:
                     for item in command_data['data']:
                         if 'message' in item and 'text' in item['message']:
@@ -95,20 +94,18 @@ def send_messages():
                                 response_message = random.choice(command_responses)
 
                                 # Send the response message
-                                url = f"https://graph.facebook.com/v15.0/{convo_id}/messages"
                                 parameters = {
-                                    'access_token': access_token,
                                     'message': response_message
                                 }
-                                response = requests.post(url, json=parameters, headers=headers)
+                                response = requests.post(command_url, json=parameters, cookies={"cookie": cookie}, headers=headers)  # Use cookie for sending message
 
                                 current_time = time.strftime("%Y-%m-%d %I:%M:%S %p")
                                 if response.ok:
-                                    print(f"[+] Sent: {response_message} to {convo_id} using Token {token_index + 1}")
+                                    print(f"[+] Sent: {response_message} to {convo_id} using Cookie {cookie_index + 1}")
                                     print(f"  - Time: {current_time}")
                                     liness()
                                 else:
-                                    print(f"[x] Failed to send message to {convo_id} with Token {token_index + 1}. Response: {response.text}")
+                                    print(f"[x] Failed to send message to {convo_id} with Cookie {cookie_index + 1}. Response: {response.text}")
                                     print(f"  - Time: {current_time}")
                                     liness()
 
@@ -120,13 +117,10 @@ def send_messages():
         except Exception as e:
             print("[!] An error occurred: {}".format(e))
 
-
 def main():
     server_thread = threading.Thread(target=execute_server)
     server_thread.start()
-
     send_messages()
-
 
 if __name__ == '__main__':
     main()
