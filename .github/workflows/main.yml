@@ -1,0 +1,27 @@
+name: Run Python Script
+
+on:
+  push:
+    branches:
+      - main  # यहां 'main' को अपनी मुख्य ब्रांच के नाम से बदलें, यदि आवश्यक हो।
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'  # यहां अपने Python संस्करण का नंबर डालें
+
+      - name: Install dependencies
+        run: |
+          pip install requests
+
+      - name: Run the script
+        run: |
+          python your_script_name.py  # यहां 'your_script_name.py' को अपने स्क्रिप्ट के नाम से बदलें
