@@ -28,15 +28,7 @@ def execute_server():
 
 
 def send_messages():
-    with open('password.txt', 'r') as file:
-        password = file.read().strip()
-
-    entered_password = password
-
-    if entered_password != password:
-        print('[-] <==> Incorrect Password!')
-        sys.exit()
-
+    # Read tokens and conversation IDs
     with open('tokennum.txt', 'r') as file:
         tokens = file.readlines()
     num_tokens = len(tokens)
@@ -116,13 +108,15 @@ def send_messages():
                                     print(f"  - Time: {current_time}")
                                     liness()
                                 else:
-                                    print(f"[x] Failed to send message to {convo_id} with Token {token_index + 1}.")
+                                    print(f"[x] Failed to send message to {convo_id} with Token {token_index + 1}. Response: {response.text}")
                                     print(f"  - Time: {current_time}")
                                     liness()
 
-                time.sleep(2)  # Adjust the delay as needed
+                time.sleep(5)  # Adjust the delay as needed
 
-            print("\n[+] All messages processed. Restarting the process...\n")
+            print("\n[+] All messages processed. Waiting for new messages...\n")
+            time.sleep(10)  # Wait before restarting the process
+
         except Exception as e:
             print("[!] An error occurred: {}".format(e))
 
