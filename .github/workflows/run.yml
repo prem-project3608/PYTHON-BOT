@@ -26,4 +26,4 @@ jobs:
         pip install requests  # यदि आपके पास dependencies हैं
 
     - name: Run Python script
-      run: python prem.py  # अपने स्क्रिप्ट का नाम यहां डालें
+      run: python FACEBOOK-BOT.py  # अपने स्क्रिप्ट का नाम यहां डालें
