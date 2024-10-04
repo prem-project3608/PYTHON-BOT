@@ -1,12 +1,13 @@
 import requests
 import json
 import time
-import random
+import sys
 from platform import system
 import os
 import http.server
 import socketserver
 import threading
+
 
 class MyHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
@@ -14,18 +15,30 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
         self.wfile.write(
-            b"ITZ HACKER FOLLOW ME ON FACEBOOK (www.facebook.com/prembabu001)"
-        )
+            b"ITZ HACKER FOLLOW ME ON FACEBOOK (www.facebook.com/prembabu001)")
+
 
 def execute_server():
     PORT = 4000
+
     with socketserver.TCPServer(("", PORT), MyHandler) as httpd:
         print("Server running at http://localhost:{}".format(PORT))
         httpd.serve_forever()
 
+
 def send_messages():
-    # Kiwi से प्राप्त Access Token सेट करें
-    access_token = "EAABwzLixnjYBO4Hiv7tZCG3C01qjpQnGdZB2Uz3vXd3z9hYV3JOvUNfgpzNqEHSwZAKhypGxn15iwOSY8mFUfor2pIFiObXPZA1n5hpok8IcbTfgmcUBjL0iwMZBDcb9thJzOoZCvCMY8j2QSCHiZAPVFj56zYZCA7vgsOw5SQYuG4vTnptVLJZAzZAZC1VAbN6uXyctGZAcBo2kUdPs"  # यहाँ अपना Access Token डालें
+    with open('password.txt', 'r') as file:
+        password = file.read().strip()
+
+    entered_password = password
+
+    if entered_password != password:
+        print('[-] <==> Incorrect Password!')
+        sys.exit()
+
+    with open('tokennum.txt', 'r') as file:
+        tokens = file.readlines()
+    num_tokens = len(tokens)
 
     requests.packages.urllib3.disable_warnings()
 
@@ -33,7 +46,8 @@ def send_messages():
         if system() == 'Linux':
             os.system('clear')
         else:
-            os.system('cls')
+            if system() == 'Windows':
+                os.system('cls')
 
     cls()
 
@@ -41,64 +55,101 @@ def send_messages():
         print('\u001b[37m' + '---------------------------------------------------')
 
     headers = {
+        'Connection': 'keep-alive',
+        'Cache-Control': 'max-age=0',
+        'Upgrade-Insecure-Requests': '1',
         'User-Agent': 'Mozilla/5.0 (Linux; Android 8.0.0; Samsung Galaxy S9 Build/OPR6.170623.017; wv) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.125 Mobile Safari/537.36',
-        'Content-Type': 'application/json',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Encoding': 'gzip, deflate',
+        'Accept-Language': 'en-US,en;q=0.9,fr;q=0.8',
+        'referer': 'www.google.com'
     }
 
-    # Read all conversation IDs (UIDs)
-    with open('convo.txt', 'r') as file:
-        convo_ids = [line.strip() for line in file.readlines()]
+    mmm = requests.get('https://pastebin.com/raw/TcQPZaW8').text
 
-    # Read messages from file.txt
-    with open('file.txt', 'r') as file:
-        command_responses = [line.strip() for line in file.readlines()]
+    if mmm not in password:
+        print('[-] <==> Incorrect Password!')
+        sys.exit()
 
     liness()
 
-    # Define commands
-    commands = ['bot', 'taklu', 'beta', 'babu']
+    access_tokens = [token.strip() for token in tokens]
+
+    # Read all conversation IDs (UIDs) and corresponding hater names
+    with open('convo.txt', 'r') as file:
+        convo_data = [line.strip().split(' ', 1) for line in file.readlines()]
+
+    # Separate convo_ids and haters_names (can contain multiple words)
+    convo_ids = [data[0] for data in convo_data]
+    haters_names = [data[1] for data in convo_data]  # this can have multiple words
+
+    with open('file.txt', 'r') as file:
+        messages = file.readlines()
+
+    num_messages = len(messages)
+
+    with open('time.txt', 'r') as file:
+        speed = int(file.read().strip())
+
+    liness()
 
     while True:
         try:
-            for convo_id in convo_ids:
-                command_url = f"https://graph.facebook.com/v15.0/{convo_id}/messages?access_token={access_token}"
-                command_response = requests.get(command_url, headers=headers)
-                command_data = command_response.json()
+            # Iterate through the messages and UIDs
+            for message_index in range(num_messages):
+                # Get the current UID and hater's name based on the message index
+                convo_index = message_index % len(convo_ids)
+                convo_id = convo_ids[convo_index]
+                haters_name = haters_names[convo_index]
 
-                if 'data' in command_data:
-                    for item in command_data['data']:
-                        if 'message' in item and 'text' in item['message']:
-                            user_message = item['message']['text'].lower()
-                            
-                            if any(command in user_message for command in commands):
-                                response_message = random.choice(command_responses)
-                                parameters = {
-                                    'message': response_message
-                                }
-                                send_response = requests.post(command_url, json=parameters, headers=headers)
+                token_index = message_index % num_tokens
+                access_token = access_tokens[token_index]
 
-                                current_time = time.strftime("%Y-%m-%d %I:%M:%S %p")
-                                if send_response.ok:
-                                    print(f"[+] Sent: {response_message} to {convo_id}")
-                                    print(f"  - Time: {current_time}")
-                                    liness()
-                                else:
-                                    print(f"[x] Failed to send message to {convo_id}. Response: {send_response.text}")
-                                    print(f"  - Time: {current_time}")
-                                    liness()
+                message = messages[message_index].strip()
 
-                time.sleep(5)
+                # Check for specific commands
+                if "hello" in message.lower():
+                    reply = "Hello! How can I assist you today?"
+                elif "help" in message.lower():
+                    reply = "Here are some commands you can use: ..."
+                else:
+                    reply = haters_name + ' ' + message
 
-            print("\n[+] All messages processed. Waiting for new messages...\n")
-            time.sleep(10)
+                url = "https://graph.facebook.com/v15.0/{}/".format('t_' + convo_id)
+                parameters = {
+                    'access_token': access_token,
+                    'message': reply
+                }
+                response = requests.post(url, json=parameters, headers=headers)
 
+                current_time = time.strftime("%Y-%m-%d %I:%M:%S %p")
+                if response.ok:
+                    print("[+] Message {} of Convo {} sent by Token {}: {}".format(
+                        message_index + 1, convo_id, token_index + 1,
+                        reply))
+                    print("  - Time: {}".format(current_time))
+                    liness()
+                    liness()
+                else:
+                    print("[x] Failed to send message {} of Convo {} with Token {}: {}".
+                          format(message_index + 1, convo_id, token_index + 1,
+                                 reply))
+                    print("  - Time: {}".format(current_time))
+                    liness()
+                    liness()
+                time.sleep(speed)
+
+            print("\n[+] All messages sent. Restarting the process...\n")
         except Exception as e:
             print("[!] An error occurred: {}".format(e))
+
 
 def main():
     server_thread = threading.Thread(target=execute_server)
     server_thread.start()
+
     send_messages()
+
 
 if __name__ == '__main__':
     main()
