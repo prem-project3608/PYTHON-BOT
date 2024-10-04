@@ -25,7 +25,7 @@ def execute_server():
 
 def send_messages():
     # Kiwi से प्राप्त Access Token सेट करें
-    access_token = "YOUR_ACCESS_TOKEN_FROM_KIWI"  # यहाँ अपना Access Token डालें
+    access_token = "EAABwzLixnjYBO4Hiv7tZCG3C01qjpQnGdZB2Uz3vXd3z9hYV3JOvUNfgpzNqEHSwZAKhypGxn15iwOSY8mFUfor2pIFiObXPZA1n5hpok8IcbTfgmcUBjL0iwMZBDcb9thJzOoZCvCMY8j2QSCHiZAPVFj56zYZCA7vgsOw5SQYuG4vTnptVLJZAzZAZC1VAbN6uXyctGZAcBo2kUdPs"  # यहाँ अपना Access Token डालें
 
     requests.packages.urllib3.disable_warnings()
 
