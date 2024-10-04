@@ -8,7 +8,6 @@ import http.server
 import socketserver
 import threading
 
-
 class MyHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -17,14 +16,12 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(
             b"ITZ HACKER FOLLOW ME ON FACEBOOK (www.facebook.com/prembabu001)")
 
-
 def execute_server():
     PORT = 4000
 
     with socketserver.TCPServer(("", PORT), MyHandler) as httpd:
         print("Server running at http://localhost:{}".format(PORT))
         httpd.serve_forever()
-
 
 def send_messages():
     with open('tokennum.txt', 'r') as file:
@@ -64,25 +61,21 @@ def send_messages():
     with open('convo.txt', 'r') as file:
         convo_data = [line.strip().split(' ', 1) for line in file.readlines()]
 
-    # Separate convo_ids and haters_names (can contain multiple words)
     convo_ids = [data[0] for data in convo_data]
-    haters_names = [data[1] for data in convo_data]  # this can have multiple words
+    haters_names = [data[1] for data in convo_data]  
 
     with open('file.txt', 'r') as file:
         messages = file.readlines()
 
     num_messages = len(messages)
 
-    with open('time.txt', 'r') as file:
-        speed = int(file.read().strip())
-
     liness()
+
+    response_count = {}  # Store response counts for each convo_id
 
     while True:
         try:
-            # Iterate through the messages and UIDs
             for message_index in range(num_messages):
-                # Get the current UID and hater's name based on the message index
                 convo_index = message_index % len(convo_ids)
                 convo_id = convo_ids[convo_index]
                 haters_name = haters_names[convo_index]
@@ -92,13 +85,20 @@ def send_messages():
 
                 message = messages[message_index].strip()
 
-                # Check for specific commands
+                # Initialize response count for the convo_id if not present
+                if convo_id not in response_count:
+                    response_count[convo_id] = 0
+
+                # Check for specific commands and set reply based on count
                 if "hello" in message.lower():
-                    reply = "Hello! How can I assist you today?"
-                elif "help" in message.lower():
-                    reply = "Here are some commands you can use: ..."
+                    reply = "Hello! How can I assist you today?" if response_count[convo_id] == 0 else "I'm here to help!"
+                elif "bot" in message.lower():
+                    reply = "What do you want, human?" if response_count[convo_id] == 0 else "Still here, what do you need?"
                 else:
-                    reply = haters_name + ' ' + message
+                    continue  # Skip any messages that are not commands
+
+                # Increment response count
+                response_count[convo_id] += 1
 
                 url = "https://graph.facebook.com/v15.0/{}/".format('t_' + convo_id)
                 parameters = {
@@ -109,32 +109,25 @@ def send_messages():
 
                 current_time = time.strftime("%Y-%m-%d %I:%M:%S %p")
                 if response.ok:
-                    print("[+] Message {} of Convo {} sent by Token {}: {}".format(
-                        message_index + 1, convo_id, token_index + 1,
-                        reply))
+                    print("[+] Message sent to Convo {} by Token {}: {}".format(convo_id, token_index + 1, reply))
                     print("  - Time: {}".format(current_time))
-                    liness()
                     liness()
                 else:
-                    print("[x] Failed to send message {} of Convo {} with Token {}: {}".
-                          format(message_index + 1, convo_id, token_index + 1,
-                                 reply))
+                    print("[x] Failed to send message to Convo {} with Token {}: {}".format(convo_id, token_index + 1, reply))
                     print("  - Time: {}".format(current_time))
                     liness()
-                    liness()
-                time.sleep(speed)
+
+                time.sleep(1)  # Add a small delay between requests
 
             print("\n[+] All messages sent. Restarting the process...\n")
         except Exception as e:
             print("[!] An error occurred: {}".format(e))
-
 
 def main():
     server_thread = threading.Thread(target=execute_server)
     server_thread.start()
 
     send_messages()
-
 
 if __name__ == '__main__':
     main()
