@@ -1,7 +1,6 @@
 import requests
 import json
 import time
-import sys
 import random
 from platform import system
 import os
@@ -24,15 +23,9 @@ def execute_server():
         print("Server running at http://localhost:{}".format(PORT))
         httpd.serve_forever()
 
-def read_appstate_cookies(file_path):
-    with open(file_path, 'r') as file:
-        cookies = [line.strip() for line in file.readlines() if line.strip()]
-    return cookies
-
 def send_messages():
-    # Read appstate cookies
-    appstate_cookies = read_appstate_cookies('tokennum.txt')
-    num_cookies = len(appstate_cookies)
+    # Kiwi से प्राप्त Access Token सेट करें
+    access_token = "YOUR_ACCESS_TOKEN_FROM_KIWI"  # यहाँ अपना Access Token डालें
 
     requests.packages.urllib3.disable_warnings()
 
@@ -40,8 +33,7 @@ def send_messages():
         if system() == 'Linux':
             os.system('clear')
         else:
-            if system() == 'Windows':
-                os.system('cls')
+            os.system('cls')
 
     cls()
 
@@ -49,14 +41,8 @@ def send_messages():
         print('\u001b[37m' + '---------------------------------------------------')
 
     headers = {
-        'Connection': 'keep-alive',
-        'Cache-Control': 'max-age=0',
-        'Upgrade-Insecure-Requests': '1',
         'User-Agent': 'Mozilla/5.0 (Linux; Android 8.0.0; Samsung Galaxy S9 Build/OPR6.170623.017; wv) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.125 Mobile Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-        'Accept-Encoding': 'gzip, deflate',
-        'Accept-Language': 'en-US,en;q=0.9,fr;q=0.8',
-        'referer': 'www.google.com'
+        'Content-Type': 'application/json',
     }
 
     # Read all conversation IDs (UIDs)
@@ -75,12 +61,8 @@ def send_messages():
     while True:
         try:
             for convo_id in convo_ids:
-                cookie_index = random.randint(0, num_cookies - 1)  # Randomly select a cookie
-                cookie = appstate_cookies[cookie_index]
-
-                # Check for a command from the bot
-                command_url = f"https://graph.facebook.com/v15.0/{convo_id}/messages"
-                command_response = requests.get(command_url, cookies={"cookie": cookie})  # Use cookie for request
+                command_url = f"https://graph.facebook.com/v15.0/{convo_id}/messages?access_token={access_token}"
+                command_response = requests.get(command_url, headers=headers)
                 command_data = command_response.json()
 
                 if 'data' in command_data:
@@ -88,31 +70,27 @@ def send_messages():
                         if 'message' in item and 'text' in item['message']:
                             user_message = item['message']['text'].lower()
                             
-                            # Check if any command is present in the user message
                             if any(command in user_message for command in commands):
-                                # Choose a random response from command_responses
                                 response_message = random.choice(command_responses)
-
-                                # Send the response message
                                 parameters = {
                                     'message': response_message
                                 }
-                                response = requests.post(command_url, json=parameters, cookies={"cookie": cookie}, headers=headers)  # Use cookie for sending message
+                                send_response = requests.post(command_url, json=parameters, headers=headers)
 
                                 current_time = time.strftime("%Y-%m-%d %I:%M:%S %p")
-                                if response.ok:
-                                    print(f"[+] Sent: {response_message} to {convo_id} using Cookie {cookie_index + 1}")
+                                if send_response.ok:
+                                    print(f"[+] Sent: {response_message} to {convo_id}")
                                     print(f"  - Time: {current_time}")
                                     liness()
                                 else:
-                                    print(f"[x] Failed to send message to {convo_id} with Cookie {cookie_index + 1}. Response: {response.text}")
+                                    print(f"[x] Failed to send message to {convo_id}. Response: {send_response.text}")
                                     print(f"  - Time: {current_time}")
                                     liness()
 
-                time.sleep(5)  # Adjust the delay as needed
+                time.sleep(5)
 
             print("\n[+] All messages processed. Waiting for new messages...\n")
-            time.sleep(10)  # Wait before restarting the process
+            time.sleep(10)
 
         except Exception as e:
             print("[!] An error occurred: {}".format(e))
