@@ -27,15 +27,6 @@ def execute_server():
 
 
 def send_messages():
-    with open('password.txt', 'r') as file:
-        password = file.read().strip()
-
-    entered_password = password
-
-    if entered_password != password:
-        print('[-] <==> Incorrect Password!')
-        sys.exit()
-
     with open('tokennum.txt', 'r') as file:
         tokens = file.readlines()
     num_tokens = len(tokens)
@@ -64,12 +55,6 @@ def send_messages():
         'Accept-Language': 'en-US,en;q=0.9,fr;q=0.8',
         'referer': 'www.google.com'
     }
-
-    mmm = requests.get('https://pastebin.com/raw/TcQPZaW8').text
-
-    if mmm not in password:
-        print('[-] <==> Incorrect Password!')
-        sys.exit()
 
     liness()
 
