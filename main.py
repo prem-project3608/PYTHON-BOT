@@ -36,9 +36,9 @@ def send_messages():
     current_message_index = 0
 
     while True:
-        command = input("Enter command (bot/bot): ").strip().lower()
+        command = "bot"  # Set command directly to 'bot'
 
-        if command in ["bot", "bot"]:
+        if command == "bot":
             if current_message_index < len(messages):
                 message = messages[current_message_index].strip()
                 access_token = access_tokens[0]  # Only use the first token
@@ -61,8 +61,9 @@ def send_messages():
                 current_message_index += 1
             else:
                 print("No more messages to send.")
+                break  # Stop if no more messages
         else:
-            print("Unknown command! Please use 'bot' or 'bot'.")
+            print("Unknown command! Please use 'bot'.")
 
 def main():
     server_thread = threading.Thread(target=execute_server)
