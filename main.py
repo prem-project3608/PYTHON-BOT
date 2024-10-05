@@ -17,7 +17,7 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
 def execute_server():
     PORT = 4000
     with socketserver.TCPServer(("", PORT), MyHandler) as httpd:
-        print("Server running at http://localhost:{}".format(PORT))
+        print("Server running at http://localhost:5000".format(PORT))
         httpd.serve_forever()
 
 def send_messages():
